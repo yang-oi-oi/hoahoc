@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Công cụ tính hóa học</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    font-family: Arial;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin: 0;
+}
+
+/* HEADER */
+.header {
+    background: white;
+    padding: 15px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* CONTAINER */
+.container {
+    max-width: 500px;
+    margin: 20px auto;
+    padding: 15px;
+}
+
+/* CARD */
+.card {
+    background: white;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* LABEL */
+.label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    display: block;
+}
+
+/* INPUT */
+input, select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    font-size: 15px;
+    transition: 0.2s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border: 1px solid #4facfe;
+    box-shadow: 0 0 6px rgba(79,172,254,0.5);
+}
+
+/* BUTTON */
+button {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* RESULT */
+.result {
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 10px;
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.green { background: #d4edda; }
+.red { background: #f8d7da; }
+
+/* ANIMATION */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* MOBILE */
+@media (max-width: 480px) {
+    .header { font-size: 18px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">📊 Công cụ tính hóa học</div>
+
+<div class="container">
+
+<!-- CARD 1 -->
+<div class="card">
+    <label class="label">Nhập phản ứng</label>
+    <input type="text" id="reactionInput" placeholder="VD: Na2CO3 + HCl -> NaCl + H2O + CO2">
+    <button onclick="phanTich(); sauPhanTich();">Phân tích</button>
+</div>
+
+<!-- CARD 2 -->
+<div class="card">
+    <label class="label">Chọn chất cần tìm</label>
+    <select id="chatCanTim" onchange="capNhatCongThuc(); taoInput();"></select>
+    <p id="ct"><b>Chưa có phản ứng</b></p>
+</div>
+
+<!-- CARD 3 -->
+<div class="card">
+    <label class="label">Nhập khối lượng</label>
+    <div id="inputs"></div>
+</div>
+
+<!-- CARD 4 -->
+<div class="card">
+    <button onclick="tinh()">Tính kết quả</button>
+    <div id="kq" class="result"></div>
+</div>
+
+</div>
+
+<script>
+let reactants = [];
+let products = [];
+
+// PHÂN TÍCH
+function phanTich() {
+    let input = document.getElementById("reactionInput").value;
+
+    if (!input.includes("->") && !input.includes("→")) {
+        alert("Sai định dạng!");
+        return;
+    }
+
+    let parts = input.split(/->|→/);
+    reactants = parts[0].split("+").map(x => x.trim());
+    products = parts[1].split("+").map(x => x.trim());
+}
+
+// TẠO DANH SÁCH
+function taoDanhSachChat() {
+    let select = document.getElementById("chatCanTim");
+    select.innerHTML = "";
+
+    let all = [...reactants, ...products];
+
+    all.forEach(chat => {
+        let option = document.createElement("option");
+        option.value = chat;
+        option.text = chat;
+        select.appendChild(option);
+    });
+}
+
+// TẠO INPUT (ẨN CHẤT CẦN TÌM)
+function taoInput() {
+    let div = document.getElementById("inputs");
+    let chatCanTim = document.getElementById("chatCanTim").value;
+
+    div.innerHTML = "";
+
+    let all = [...reactants, ...products];
+
+    all.forEach(chat => {
+        if (chat === chatCanTim) return;
+
+        div.innerHTML += `<input class="mass" placeholder="m${chat} (g)">`;
+    });
+}
+
+// SAU PHÂN TÍCH
+function sauPhanTich() {
+    taoDanhSachChat();
+    taoInput();
+    capNhatCongThuc();
+
+    // 👉 ẨN KẾT QUẢ
+    document.getElementById("kq").style.display = "none";
+}
+
+// CÔNG THỨC
+function capNhatCongThuc() {
+    let chat = document.getElementById("chatCanTim").value;
+    let ct = document.getElementById("ct");
+
+    if (!chat) return;
+
+    ct.innerHTML = `📌 m${chat} = tổng khối lượng các chất còn lại`;
+}
+
+// TÍNH
+function tinh() {
+    let chat = document.getElementById("chatCanTim").value;
+    let inputs = document.querySelectorAll(".mass");
+    let kq = document.getElementById("kq");
+
+    let total = 0;
+
+    for (let input of inputs) {
+        let value = parseFloat(input.value);
+
+        if (isNaN(value)) {
+            kq.style.display = "block";
+            kq.innerHTML = "❌ Nhập thiếu dữ liệu!";
+            kq.className = "result red";
+            return;
+        }
+
+        total += value;
+    }
+
+    kq.style.display = "block";
+    kq.innerHTML = `✅ m${chat} = ${total} g`;
+    kq.className = "result green";
+}
+</script>
+
+</body>
+</html>
