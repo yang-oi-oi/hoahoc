@@ -11,42 +11,61 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+    /* BACKGROUND ẢNH */
     background: url("bg-hoa-hoc.png") no-repeat center center fixed;
     background-size: cover;
+
     margin: 0;
     min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
 }
 
+/* LỚP PHỦ MỜ CHO DỄ ĐỌC */
 body::before {
     content: '';
     position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(255,255,255,0.65);
+
+    background: rgba(255, 255, 255, 0.65);
+
     z-index: -1;
 }
 
 .header {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
     padding: 20px;
     text-align: center;
     font-size: 24px;
     font-weight: 700;
+    box-shadow: 0 8px 32px rgba(31, 38, 135, 0.3);
     border-radius: 20px;
     margin: 20px;
 }
 
 .container {
     max-width: 500px;
-    margin: auto;
+    margin: 20px auto;
     padding: 20px;
 }
 
 .card {
-    background: rgba(255,255,255,0.9);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(15px);
     padding: 20px;
     border-radius: 20px;
     margin-bottom: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    transition: 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
 }
 
 .label {
@@ -68,9 +87,9 @@ button {
     padding: 12px;
     border-radius: 12px;
     border: none;
-    background: #667eea;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
-    font-weight: bold;
+    font-weight: 700;
     cursor: pointer;
 }
 
@@ -176,24 +195,11 @@ function capNhatCongThuc() {
 
     if (!chat) return;
 
-    let congThuc = `📌 m${chat} = `;
-
     if (reactants.includes(chat)) {
-        let sp = products.map(c => `m${c}`).join(" + ");
-        let pư = reactants.filter(c => c !== chat).map(c => `m${c}`).join(" + ");
-
-        congThuc += sp;
-        if (pư) congThuc += ` - (${pư})`;
-
+        ct.innerHTML = `📌 m${chat} = tổng sản phẩm - các chất phản ứng còn lại`;
     } else {
-        let pư = reactants.map(c => `m${c}`).join(" + ");
-        let sp = products.filter(c => c !== chat).map(c => `m${c}`).join(" + ");
-
-        congThuc += pư;
-        if (sp) congThuc += ` - (${sp})`;
+        ct.innerHTML = `📌 m${chat} = tổng phản ứng - các sản phẩm còn lại`;
     }
-
-    ct.innerHTML = congThuc;
 }
 
 function tinh() {
@@ -235,13 +241,6 @@ function tinh() {
         result = productMass - reactantMass;
     } else {
         result = reactantMass - productMass;
-    }
-
-    if (result < 0) {
-        kq.style.display = "block";
-        kq.innerHTML = "❌ Kết quả âm → Sai số liệu! Nhập lại!";
-        kq.className = "result red";
-        return;
     }
 
     kq.style.display = "block";
