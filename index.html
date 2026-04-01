@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Công cụ tính khối lượng chất theo BTKL</title>
+<title>Công cụ tính hóa học</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -15,7 +15,6 @@ body {
     margin: 0;
 }
 
-/* HEADER */
 .header {
     background: white;
     padding: 15px;
@@ -25,14 +24,12 @@ body {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* CONTAINER */
 .container {
     max-width: 500px;
     margin: 20px auto;
     padding: 15px;
 }
 
-/* CARD */
 .card {
     background: white;
     padding: 15px;
@@ -46,14 +43,12 @@ body {
     transform: translateY(-5px);
 }
 
-/* LABEL */
 .label {
     font-weight: bold;
     margin-bottom: 6px;
     display: block;
 }
 
-/* INPUT */
 input, select {
     width: 100%;
     padding: 12px;
@@ -61,16 +56,8 @@ input, select {
     border: 1px solid #ccc;
     margin-bottom: 10px;
     font-size: 15px;
-    transition: 0.2s;
 }
 
-input:focus, select:focus {
-    outline: none;
-    border: 1px solid #4facfe;
-    box-shadow: 0 0 6px rgba(79,172,254,0.5);
-}
-
-/* BUTTON */
 button {
     width: 100%;
     padding: 12px;
@@ -81,18 +68,8 @@ button {
     font-size: 16px;
     font-weight: bold;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-button:hover {
-    transform: translateY(-2px);
-}
-
-button:active {
-    transform: scale(0.96);
-}
-
-/* RESULT */
 .result {
     padding: 12px;
     border-radius: 10px;
@@ -100,52 +77,36 @@ button:active {
     text-align: center;
     margin-top: 10px;
     display: none;
-    animation: fadeIn 0.3s ease;
 }
 
 .green { background: #d4edda; }
 .red { background: #f8d7da; }
-
-/* ANIMATION */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* MOBILE */
-@media (max-width: 480px) {
-    .header { font-size: 18px; }
-}
 </style>
 </head>
 
 <body>
 
-<div class="header">📊 Công cụ tính khối lượng chất theo BTKL</div>
+<div class="header">📊 Công cụ tính hóa học</div>
 
 <div class="container">
 
-<!-- CARD 1 -->
 <div class="card">
     <label class="label">Nhập phản ứng</label>
     <input type="text" id="reactionInput" placeholder="VD: Na2CO3 + HCl -> NaCl + H2O + CO2">
     <button onclick="phanTich(); sauPhanTich();">Phân tích</button>
 </div>
 
-<!-- CARD 2 -->
 <div class="card">
     <label class="label">Chọn chất cần tìm</label>
     <select id="chatCanTim" onchange="capNhatCongThuc(); taoInput();"></select>
     <p id="ct"><b>Chưa có phản ứng</b></p>
 </div>
 
-<!-- CARD 3 -->
 <div class="card">
     <label class="label">Nhập khối lượng</label>
     <div id="inputs"></div>
 </div>
 
-<!-- CARD 4 -->
 <div class="card">
     <button onclick="tinh()">Tính kết quả</button>
     <div id="kq" class="result"></div>
@@ -186,7 +147,7 @@ function taoDanhSachChat() {
     });
 }
 
-// TẠO INPUT (ẨN CHẤT CẦN TÌM)
+// TẠO INPUT
 function taoInput() {
     let div = document.getElementById("inputs");
     let chatCanTim = document.getElementById("chatCanTim").value;
@@ -207,8 +168,6 @@ function sauPhanTich() {
     taoDanhSachChat();
     taoInput();
     capNhatCongThuc();
-
-    // 👉 ẨN KẾT QUẢ
     document.getElementById("kq").style.display = "none";
 }
 
@@ -219,7 +178,11 @@ function capNhatCongThuc() {
 
     if (!chat) return;
 
-    ct.innerHTML = `📌 m${chat} = tổng khối lượng các chất còn lại`;
+    if (reactants.includes(chat)) {
+        ct.innerHTML = `📌 m${chat} = tổng sản phẩm - các chất phản ứng còn lại`;
+    } else {
+        ct.innerHTML = `📌 m${chat} = tổng phản ứng - các sản phẩm còn lại`;
+    }
 }
 
 // TÍNH
@@ -228,10 +191,17 @@ function tinh() {
     let inputs = document.querySelectorAll(".mass");
     let kq = document.getElementById("kq");
 
-    let total = 0;
+    let all = [...reactants, ...products];
 
-    for (let input of inputs) {
-        let value = parseFloat(input.value);
+    let reactantMass = 0;
+    let productMass = 0;
+
+    let index = 0;
+
+    for (let c of all) {
+        if (c === chat) continue;
+
+        let value = parseFloat(inputs[index].value);
 
         if (isNaN(value)) {
             kq.style.display = "block";
@@ -240,11 +210,25 @@ function tinh() {
             return;
         }
 
-        total += value;
+        if (reactants.includes(c)) {
+            reactantMass += value;
+        } else {
+            productMass += value;
+        }
+
+        index++;
+    }
+
+    let result;
+
+    if (reactants.includes(chat)) {
+        result = productMass - reactantMass;
+    } else {
+        result = reactantMass - productMass;
     }
 
     kq.style.display = "block";
-    kq.innerHTML = `✅ m${chat} = ${total} g`;
+    kq.innerHTML = `✅ m${chat} = ${result} g`;
     kq.className = "result green";
 }
 </script>
